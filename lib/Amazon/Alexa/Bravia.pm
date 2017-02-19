@@ -12,9 +12,15 @@ my $me = 'Amazon::Alexa::Bravia';
 
 =cut
 
-sub alexa_configure {{
-    intentPrefix => 'alexa_intent_',
-}}
+sub alexa_configure {
+    my $class = shift;
+    my $config = shift // {};
+    my $node = {
+        intentPrefix => 'alexa_intent_',
+        %$config,
+    };
+    return bless $node, $class;
+}
 
 =head2 alexa_create_token
 
@@ -24,11 +30,12 @@ sub alexa_configure {{
 
 sub alexa_create_token {
     my ($self,$param) = @_;
-    return 'fake' if ($param->{'Password'} && $param->{'Password'} eq 'fake');
+    my $want = $self->{'alexa_token'};
+    return $want if ($param->{'Password'} && $param->{'Password'} eq $want);
     my $fields = {};
     $fields->{$_} = { type=>'hidden', value=> $param->{$_} } foreach keys %$param;
     $fields->{'Password'} = { type=>'password' };
-    Amazon::Alexa::Dispatch->alexa_login_helper( 'Fake Alexa Login','Please type "fake" into the password field.', $fields );
+    Amazon::Alexa::Dispatch->alexa_login_helper( 'Fake Alexa Login','Please type the token into the password field.', $fields );
     return '';
 }
 
@@ -39,9 +46,9 @@ sub alexa_create_token {
 =cut
 
 sub alexa_authenticate_token {
-    my ($class, $method, $p) = @_;
-    warn $method,$p;
-    return 'nobody' if $p eq 'fake' && $method =~ /^alexa_intent_(HelloIntent|BraviaOffIntent)$/;
+    my ($self, $method, $p) = @_;
+    my $want = $self->{'alexa_token'};
+    return 'nobody' if $p eq $want && $method =~ /^alexa_intent_(HelloIntent|BraviaOffIntent)$/;
     return '';
 }
 
@@ -52,8 +59,20 @@ sub alexa_authenticate_token {
 =cut
 
 sub alexa_intent_BraviaOffIntent {
-    my ($class, $user, $json) = @_;
-    my $resp = `/usr/bin/curl http://10.0.0.4/sony/IRCC -d \@/home/jter/sony.off.soap -H 'Content-Type: text/xml; charset=UTF-8' -H 'SOAPACTION: "urn:schemas-sony-com:service:IRCC:1#X_SendIRCC"' -H "X-Auth-PSK: 0000" --connect-timeout 2 2>/dev/null`;
+    my ($self, $user, $json) = @_;
+    my $ip = $self->{'ip'};
+    my $X_Auth_PSK = $self->{'X-Auth-PSK'};
+    my $data =<<EOF;
+<?xml version="1.0"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <s:Body>
+    <u:X_SendIRCC xmlns:u="urn:schemas-sony-com:service:IRCC:1">
+      <IRCCCode>AAAAAQAAAAEAAAAvAw==</IRCCCode>
+    </u:X_SendIRCC>
+  </s:Body>
+</s:Envelope>
+EOF
+    my $resp = `/usr/bin/curl http://$ip/sony/IRCC -d '$data' -H 'Content-Type: text/xml; charset=UTF-8' -H 'SOAPACTION: "urn:schemas-sony-com:service:IRCC:1#X_SendIRCC"' -H "X-Auth-PSK: $X_Auth_PSK" --connect-timeout 2 2>&1`;
     return $resp =~ /X_SendIRCCResponse/ ? "OK" : "T V is not on";
 }
 
