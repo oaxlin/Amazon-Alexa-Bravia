@@ -6,6 +6,13 @@ use JSON;
 
 my $me = 'Amazon::Alexa::Bravia';
 
+my $actions = {
+    'turn off' => 'AAAAAQAAAAEAAAAvAw==',
+    'mute'     => 'AAAAAQAAAAEAAAAUAw==',
+    'unmute'   => 'AAAAAQAAAAEAAAAUAw==',
+    'netflix'  => 'AAAAAgAAABoAAAB8Aw==',
+};
+
 =head2 alexa_configure
 
   See Amazon::Alexa::Dispatch
@@ -48,7 +55,7 @@ sub alexa_create_token {
 sub alexa_authenticate_token {
     my ($self, $method, $p) = @_;
     my $want = $self->{'alexa_token'};
-    return 'nobody' if $p eq $want && $method =~ /^alexa_intent_(HelloIntent|BraviaOffIntent)$/;
+    return 'nobody' if $p eq $want;
     return '';
 }
 
@@ -56,36 +63,54 @@ sub alexa_authenticate_token {
 
   Turns off your TV
 
-=cut
-
-sub alexa_intent_BraviaOffIntent {
-    my ($self, $user, $json) = @_;
-    my $ip = $self->{'ip'};
-    my $X_Auth_PSK = $self->{'X-Auth-PSK'};
-    my $data =<<EOF;
-<?xml version="1.0"?>
-<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-  <s:Body>
-    <u:X_SendIRCC xmlns:u="urn:schemas-sony-com:service:IRCC:1">
-      <IRCCCode>AAAAAQAAAAEAAAAvAw==</IRCCCode>
-    </u:X_SendIRCC>
-  </s:Body>
-</s:Envelope>
-EOF
-    my $resp = `/usr/bin/curl http://$ip/sony/IRCC -d '$data' -H 'Content-Type: text/xml; charset=UTF-8' -H 'SOAPACTION: "urn:schemas-sony-com:service:IRCC:1#X_SendIRCC"' -H "X-Auth-PSK: $X_Auth_PSK" --connect-timeout 2 2>&1`;
-    return $resp =~ /X_SendIRCCResponse/ ? "OK" : "T V is not on";
-}
-
 =head2 alexa_intent_BraviaOffIntent__meta
 
   See Amazon::Alexa::Dispatch
 
 =cut
 
-sub alexa_intent_BraviaOffIntent__meta{
+sub alexa_intent_BraviaOffIntent { shift->_bravia_intent('turn off'); }
+sub alexa_intent_BraviaOffIntent__meta{ shift->_bravia_intent__meta('turn off'); }
+sub alexa_intent_BraviaMuteIntent { shift->_bravia_intent('mute'); }
+sub alexa_intent_BraviaMuteIntent__meta{ shift->_bravia_intent__meta('mute'); }
+sub alexa_intent_BraviaNetflixIntent { shift->_bravia_intent('netflix'); }
+sub alexa_intent_BraviaNetflixIntent__meta{ {
+    utterances => [
+        'open netflix',
+    ],
+} }
+sub alexa_intent_BraviaUnMuteIntent { shift->_bravia_intent('unmute'); }
+sub alexa_intent_BraviaUnMuteIntent__meta{ shift->_bravia_intent__meta('unmute'); }
+
+sub _bravia_intent {
+    my ($self, $cmd) = @_;
+    my $ip = $self->{'ip'};
+    my $X_Auth_PSK = $self->{'X-Auth-PSK'};
+    my $irccode = $actions->{$cmd};
+    my $data =<<EOF;
+<?xml version="1.0"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <s:Body>
+    <u:X_SendIRCC xmlns:u="urn:schemas-sony-com:service:IRCC:1">
+      <IRCCCode>$irccode</IRCCCode>
+    </u:X_SendIRCC>
+  </s:Body>
+</s:Envelope>
+EOF
+    warn $data;
+    my $resp = `/usr/bin/curl -s http://$ip/sony/IRCC -d '$data' -H 'Content-Type: text/xml; charset=UTF-8' -H 'SOAPACTION: "urn:schemas-sony-com:service:IRCC:1#X_SendIRCC"' -H "X-Auth-PSK: $X_Auth_PSK" --connect-timeout 2 2>&1`;
+    warn $resp;
+    return "T V auth failed.  Please set a valid x auth p s k value in the config" if $resp =~ /<errorCode>606<\/errorCode>/;
+    return $resp =~ /X_SendIRCCResponse/ ? "OK" : "T V is not on";
+}
+
+sub _bravia_intent__meta {
+    my ($self,$action) = @_;
     return {
         utterances => [
-            'turn off the tv',
+            $action.' the tv',
+            $action.' the television',
+            $action.' the boob tube',
         ],
         # slots => [{name=>"someName",type=>"someType"},{name=>"anotherName",type=>"anotherType"}]
     }
