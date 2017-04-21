@@ -6,6 +6,46 @@ use base 'Amazon::Alexa::Dispatch';
 
 my $me = 'Amazon::Alexa::Bravia';
 
+=head1 NAME
+
+Amazon::Alexa::Bravia - Perl extensions for interacting with a Sony Bravia smart TV
+
+=head1 SYNOPSIS
+
+  use Amazon::Alexa::Dispatch;
+
+  my $alexa = Amazon::Alexa::Dispatch->new({
+      skillName=>'YourSkillName',
+      "Amazon::Alexa::Dispatch" : {
+          "alexa_token" : "some-secret-password"
+      },
+      "Amazon::Alexa::Bravia" : {
+          "ip" : {
+              "somename"   : "10.0.0.23",
+              "upstairs"   : "10.0.0.23",
+              "downstairs" : "10.0.0.24"
+          },
+          "default_ip" : "upstairs",
+          "X-Auth-PSK" : "0000"
+      },
+  });
+  $alexa->run_method($json);
+
+=head1 DESCRIPTION
+
+A Perl module which provides a simple and lightweight interface from the Amazon::Alexa::Dispatch
+to your Bravia television.
+
+=head1 METHODS
+
+A list of methods available.
+
+Each method has a corrisponding __meta that provides useful information about the method.
+This extra information is used to tell the dispatcher which utternces should trigger
+a method.
+
+=cut
+
 my $actions = {
     'turn off' => 'AAAAAQAAAAEAAAAvAw==',
     'mute'     => 'AAAAAQAAAAEAAAAUAw==',
@@ -13,13 +53,27 @@ my $actions = {
     'netflix'  => 'AAAAAgAAABoAAAB8Aw==',
 };
 
+=head2 alexa_intent_BraviaOffIntent__meta
+
 =head2 alexa_intent_BraviaOffIntent( $args, $json )
 
   Turns off your TV
 
-=head2 alexa_intent_BraviaOffIntent__meta
+=head2 alexa_intent_BraviaMuteIntent__meta
 
-  See Amazon::Alexa::Dispatch
+=head2 alexa_intent_BraviaMuteIntent( $args, $json )
+
+=head2 alexa_intent_BraviaUnMuteIntent__meta
+
+=head2 alexa_intent_BraviaUnMuteIntent( $args, $json )
+
+  Toggles the mute/unmute state of the TV.
+
+=head2 alexa_intent_BraviaNetflixIntent__meta
+
+=head2 alexa_intent_BraviaNetflixIntent( $args, $json )
+
+  Opens the Netflix smart TV app
 
 =cut
 
