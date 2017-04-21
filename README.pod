@@ -26,7 +26,7 @@ version 0.001
               "downstairs" : "10.0.0.24"
           },
           "default_ip" : "upstairs",
-          "X-Auth-PSK" : "0000"
+          "X-Auth-PSK" : "0000", # can also be a hash with keynames similar to "ip"
       },
   });
   $alexa->run_method($json);

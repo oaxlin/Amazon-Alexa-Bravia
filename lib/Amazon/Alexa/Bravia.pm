@@ -26,7 +26,7 @@ Amazon::Alexa::Bravia - Perl extensions for interacting with a Sony Bravia smart
               "downstairs" : "10.0.0.24"
           },
           "default_ip" : "upstairs",
-          "X-Auth-PSK" : "0000"
+          "X-Auth-PSK" : "0000", # can also be a hash with keynames similar to "ip"
       },
   });
   $alexa->run_method($json);
@@ -95,9 +95,10 @@ sub _bravia_intent {
     my $args = $self->slots_to_hash($json);
     my $config = $self->{'config'}->{ref $self};
     my $ip = $config->{'ip'}->{$args->{'bravia_location'}} // $config->{'ip'}->{$config->{'default_ip'}//'default'};
-    return "Missing television ip\n" unless $ip;
+    return "Missing television ip\n" unless $ip && ! ref $ip;
     my $X_Auth_PSK = $config->{'X-Auth-PSK'};
-    return "Missing television x auth psk value\n" unless defined $X_Auth_PSK;
+    $X_Auth_PSK = $X_Auth_PSK->{$args->{'bravia_location'} // $config->{'default_ip'} // 'default'} if ref $X_Auth_PSK eq 'HASH';
+    return "Missing television x auth psk value\n" unless defined $X_Auth_PSK && ! ref $X_Auth_PSK;
     my $irccode = $actions->{$cmd};
     return "Missing television i r c code\n" unless defined $irccode;
     my $data =<<EOF;
