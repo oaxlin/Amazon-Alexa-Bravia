@@ -1,25 +1,25 @@
-package Amazon::Alexa::Bravia;
+package Net::Amazon::Alexa::Dispatch::Bravia;
 use strict;
 use warnings;
 use lib qw(/home/oaxlin/alexa/lib);
-use base 'Amazon::Alexa::Dispatch';
+use base 'Net::Amazon::Alexa::Dispatch';
 
-my $me = 'Amazon::Alexa::Bravia';
+my $me = 'Net::Amazon::Alexa::Dispatch::Bravia';
 
 =head1 NAME
 
-Amazon::Alexa::Bravia - Perl extensions for interacting with a Sony Bravia smart TV
+Net::Amazon::Alexa::Dispatch::Bravia - Perl extensions for interacting with a Sony Bravia smart TV
 
 =head1 SYNOPSIS
 
-  use Amazon::Alexa::Dispatch;
+  use Net::Amazon::Alexa::Dispatch;
 
-  my $alexa = Amazon::Alexa::Dispatch->new({
+  my $alexa = Net::Amazon::Alexa::Dispatch->new({
       skillName=>'YourSkillName',
-      "Amazon::Alexa::Dispatch" : {
+      "Net::Amazon::Alexa::Dispatch" : {
           "alexa_token" : "some-secret-password"
       },
-      "Amazon::Alexa::Bravia" : {
+      "Net::Amazon::Alexa::Dispatch::Bravia" : {
           "ip" : {
               "somename"   : "10.0.0.23",
               "upstairs"   : "10.0.0.23",
@@ -33,7 +33,7 @@ Amazon::Alexa::Bravia - Perl extensions for interacting with a Sony Bravia smart
 
 =head1 DESCRIPTION
 
-A Perl module which provides a simple and lightweight interface from the Amazon::Alexa::Dispatch
+A Perl module which provides a simple and lightweight interface from the Net::Amazon::Alexa::Dispatch::Bravitch
 to your Bravia television.
 
 =head1 METHODS
@@ -94,7 +94,7 @@ sub _bravia_intent {
     my ($self, $cmd, $json) = @_;
     my $args = $self->slots_to_hash($json);
     my $config = $self->{'config'}->{ref $self};
-    my $ip = $config->{'ip'}->{$args->{'bravia_location'}} // $config->{'ip'}->{$config->{'default_ip'}//'default'};
+    my $ip = $config->{'ip'}->{$args->{'bravia_location'}//''} // $config->{'ip'}->{$config->{'default_ip'}//'default'};
     return "Missing television ip\n" unless $ip && ! ref $ip;
     my $X_Auth_PSK = $config->{'X-Auth-PSK'};
     $X_Auth_PSK = $X_Auth_PSK->{$args->{'bravia_location'} // $config->{'default_ip'} // 'default'} if ref $X_Auth_PSK eq 'HASH';

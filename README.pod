@@ -4,7 +4,7 @@
 
 =head1 NAME
 
-Amazon::Alexa::Bravia
+Net::Amazon::Alexa::Dispatch::Bravia
 
 =head1 VERSION
 
@@ -12,14 +12,14 @@ version 0.001
 
 =head1 SYNOPSIS
 
-  use Amazon::Alexa::Dispatch;
+  use Net::Amazon::Alexa::Dispatch;
 
-  my $alexa = Amazon::Alexa::Dispatch->new({
+  my $alexa = Net::Amazon::Alexa::Dispatch->new({
       skillName=>'YourSkillName',
-      "Amazon::Alexa::Dispatch" : {
+      "Net::Amazon::Alexa::Dispatch" : {
           "alexa_token" : "some-secret-password"
       },
-      "Amazon::Alexa::Bravia" : {
+      "Net::Amazon::Alexa::Dispatch::Bravia" : {
           "ip" : {
               "somename"   : "10.0.0.23",
               "upstairs"   : "10.0.0.23",
@@ -33,12 +33,12 @@ version 0.001
 
 =head1 DESCRIPTION
 
-A Perl module which provides a simple and lightweight interface from the Amazon::Alexa::Dispatch
+A Perl module which provides a simple and lightweight interface from the Net::Amazon::Alexa::Dispatch::Bravitch
 to your Bravia television.
 
 =head1 NAME
 
-Amazon::Alexa::Bravia - Perl extensions for interacting with a Sony Bravia smart TV
+Net::Amazon::Alexa::Dispatch::Bravia - Perl extensions for interacting with a Sony Bravia smart TV
 
 =head1 METHODS
 
