@@ -55,23 +55,23 @@ my $actions = {
 
 =head2 alexa_intent_BraviaOffIntent__meta
 
-=head2 alexa_intent_BraviaOffIntent( $args, $json )
+=head2 alexa_intent_BraviaOffIntent( $json )
 
   Turns off your TV
 
 =head2 alexa_intent_BraviaMuteIntent__meta
 
-=head2 alexa_intent_BraviaMuteIntent( $args, $json )
+=head2 alexa_intent_BraviaMuteIntent( $json )
 
 =head2 alexa_intent_BraviaUnMuteIntent__meta
 
-=head2 alexa_intent_BraviaUnMuteIntent( $args, $json )
+=head2 alexa_intent_BraviaUnMuteIntent( $json )
 
   Toggles the mute/unmute state of the TV.
 
 =head2 alexa_intent_BraviaNetflixIntent__meta
 
-=head2 alexa_intent_BraviaNetflixIntent( $args, $json )
+=head2 alexa_intent_BraviaNetflixIntent( $json )
 
   Opens the Netflix smart TV app
 
