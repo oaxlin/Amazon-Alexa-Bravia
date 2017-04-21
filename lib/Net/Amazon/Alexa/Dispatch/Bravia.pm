@@ -96,11 +96,13 @@ sub _bravia_intent {
     my $config = $self->{'config'}->{ref $self};
     my $ip = $config->{'ip'}->{$args->{'bravia_location'}//''} // $config->{'ip'}->{$config->{'default_ip'}//'default'};
     return "Missing television ip\n" unless $ip && ! ref $ip;
+    return "Invalid television ip\n" unless $ip =~ /^(\d+\.){3}\d+$/;
     my $X_Auth_PSK = $config->{'X-Auth-PSK'};
     $X_Auth_PSK = $X_Auth_PSK->{$args->{'bravia_location'} // $config->{'default_ip'} // 'default'} if ref $X_Auth_PSK eq 'HASH';
     return "Missing television x auth psk value\n" unless defined $X_Auth_PSK && ! ref $X_Auth_PSK;
     my $irccode = $actions->{$cmd};
     return "Missing television i r c code\n" unless defined $irccode;
+    return "Invalid television i r c code\n" unless $irccode =~ /^\d+$/;
     my $data =<<EOF;
 <?xml version="1.0"?>
 <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
