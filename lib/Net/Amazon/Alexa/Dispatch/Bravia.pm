@@ -77,6 +77,20 @@ my $actions = {
 
 =cut
 
+sub alexa_intent_BraviaOnIntent__meta{ shift->_bravia_intent__meta('turn on'); }
+sub alexa_intent_BraviaOnIntent {
+    my ($self, $cmd, $json) = @_;
+    my $args = $self->slots_to_hash($json);
+    my $config = $self->{'config'}->{ref $self};
+    return "Missing ".(ref $self).' config' unless $config;
+    my $mac = $config->{'mac'}->{$args->{'bravia_location'}//''} // $config->{'mac'}->{$config->{'default_ip'}//'default'};
+    return "Missing television mac address\n" unless $mac && ! ref $mac;
+    return "Invalid television mac address\n" unless $mac =~ /^[a-fA-F0-9\:]+$/;
+    require Net::Wake;
+    Net::Wake::by_udp(undef,$mac);
+    return "OK";
+}
+
 sub alexa_intent_BraviaOffIntent { shift->_bravia_intent('turn off',@_); }
 sub alexa_intent_BraviaOffIntent__meta{ shift->_bravia_intent__meta('turn off'); }
 sub alexa_intent_BraviaMuteIntent { shift->_bravia_intent('mute',@_); }
@@ -93,7 +107,7 @@ sub alexa_intent_BraviaUnMuteIntent__meta{ shift->_bravia_intent__meta('unmute')
 sub _bravia_intent {
     my ($self, $cmd, $json) = @_;
     my $args = $self->slots_to_hash($json);
-    my $config = $self->{'config'}->{ref $self};
+    my $config = $self->config;
     my $ip = $config->{'ip'}->{$args->{'bravia_location'}//''} // $config->{'ip'}->{$config->{'default_ip'}//'default'};
     return "Missing television ip\n" unless $ip && ! ref $ip;
     return "Invalid television ip\n" unless $ip =~ /^(\d+\.){3}\d+$/;
@@ -101,8 +115,7 @@ sub _bravia_intent {
     $X_Auth_PSK = $X_Auth_PSK->{$args->{'bravia_location'} // $config->{'default_ip'} // 'default'} if ref $X_Auth_PSK eq 'HASH';
     return "Missing television x auth psk value\n" unless defined $X_Auth_PSK && ! ref $X_Auth_PSK;
     my $irccode = $actions->{$cmd};
-    return "Missing television i r c code\n" unless defined $irccode;
-    return "Invalid television i r c code\n" unless $irccode =~ /^\d+$/;
+    return "Missing television i r c code for $cmd intent\n" unless defined $irccode;
     my $data =<<EOF;
 <?xml version="1.0"?>
 <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
